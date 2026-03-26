@@ -153,3 +153,5 @@ isort .
 | [snowflake-ds-setup](https://github.com/jar-ry/snowflake-ds-setup) | Environment setup, data generation, and helper utilities (run this first) |
 | [snowflake-ds-01-notebooks](https://github.com/jar-ry/snowflake-ds-01-notebooks) | Same pipeline running entirely in Snowflake UI (no local setup) |
 | [snowflake-ds-02-ml-jobs-notebook](https://github.com/jar-ry/snowflake-ds-02-ml-jobs-notebook) | Same pipeline run locally with `@remote` decorator for ML Jobs |
+| [snowflake-ds-04-feature-store](https://github.com/jar-ry/snowflake-ds-04-feature-store) | Split repo: Feature Store with FeatureViews and Versioned Datasets |
+| [snowflake-ds-04-ml-training](https://github.com/jar-ry/snowflake-ds-04-ml-training) | Split repo: ML Training with training, promotion, inference, monitoring |
