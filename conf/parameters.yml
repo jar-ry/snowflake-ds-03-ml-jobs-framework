@@ -1,0 +1,107 @@
+snowflake:
+  database: RETAIL_REGRESSION_DEMO
+  schema: DS
+  role: RETAIL_REGRESSION_DEMO_ROLE
+  warehouse: RETAIL_REGRESSION_DEMO_WH
+  warehouse_size: MEDIUM
+  connection_file: ./connection.json
+
+feature_store:
+  schema: FEATURE_STORE
+  entity_name: CUSTOMER
+  entity_join_keys:
+    - CUSTOMER_ID
+  feature_view_name: FV_PREPROCESS
+  feature_view_version: V_1
+  refresh_freq: "60 minute"
+  dataset_name: TRAINING_DATASET
+
+model_registry:
+  schema: MODELLING
+
+modelling:
+  model_name: UC01_SNOWFLAKEML_RF_REGRESSOR_MODEL
+  experiment_name: MY_EXPERIMENT
+  target_column: LIFETIME_VALUE
+  feature_columns:
+    - AGE
+    - GENDER
+    - LOYALTY_TIER
+    - TENURE_MONTHS
+    - AVG_ORDER_VALUE
+    - PURCHASE_FREQUENCY
+    - RETURN_RATE
+    - TOTAL_ORDERS
+    - ANNUAL_INCOME
+    - AVERAGE_ORDER_PER_MONTH
+    - DAYS_SINCE_LAST_PURCHASE
+    - DAYS_SINCE_SIGNUP
+    - EXPECTED_DAYS_BETWEEN_PURCHASES
+    - DAYS_SINCE_EXPECTED_LAST_PURCHASE_DATE
+  numerical_columns:
+    - AGE
+    - TENURE_MONTHS
+    - AVG_ORDER_VALUE
+    - PURCHASE_FREQUENCY
+    - RETURN_RATE
+    - TOTAL_ORDERS
+    - ANNUAL_INCOME
+    - AVERAGE_ORDER_PER_MONTH
+    - DAYS_SINCE_LAST_PURCHASE
+    - DAYS_SINCE_SIGNUP
+    - EXPECTED_DAYS_BETWEEN_PURCHASES
+    - DAYS_SINCE_EXPECTED_LAST_PURCHASE_DATE
+  categorical_columns:
+    - GENDER
+  ordinal_columns:
+    - LOYALTY_TIER
+  ordinal_categories:
+    LOYALTY_TIER:
+      - low
+      - medium
+      - high
+  test_size: 0.2
+  random_state: 42
+  tuning_metric: mean_absolute_percentage_error
+  tuning_mode: min
+
+hpo:
+  max_depth: [1, 4, 6, 10]
+  eta: [0.01, 0.1, 0.8]
+  n_estimators: [10, 150, 500]
+  subsample: [0.5, 0.7, 1.0]
+  reg_lambda: [0.1, 1, 10]
+  random_state: [42]
+
+compute:
+  pool_name: CLV_MODEL_POOL_CPU
+  stage_name: payload_stage
+  target_instances: 3
+  num_trials: 10
+
+serving:
+  service_name: clv_service
+  ingress_enabled: true
+
+scheduling:
+  task_name: CLV_BATCH_INFERENCE_TASK
+  procedure_name: CLV_BATCH_INFERENCE_SP
+  cron: "0 6 * * *"  # Daily at 6am UTC
+  timezone: "UTC"
+  warehouse: RETAIL_REGRESSION_DEMO_WH
+
+monitoring:
+  prediction_table: prediction_table
+  baseline_table: prediction_baseline
+  timestamp_column: BEHAVIOR_UPDATED_AT
+  id_columns:
+    - CUSTOMER_ID
+  prediction_columns:
+    - PREDICTION
+  actual_columns:
+    - LIFETIME_VALUE
+  segment_columns:
+    - GENDER
+  background_warehouse: COMPUTE_WH
+  refresh_interval: "1 hour"
+  aggregation_window: "1 day"

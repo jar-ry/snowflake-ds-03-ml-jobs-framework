@@ -1,0 +1,38 @@
+[project]
+name = "clv-ml-framework"
+version = "0.1.0"
+description = "CLV Model Pipeline Framework on Snowflake ML Jobs"
+requires-python = ">=3.10"
+
+[tool.black]
+line-length = 120
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+line_length = 120
+known_third_party = ["snowflake", "xgboost", "sklearn", "pandas", "numpy"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "E722",  # bare except
+    "E402",  # module level import not at top of file
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
