@@ -74,18 +74,18 @@ hpo:
   random_state: [42]
 
 compute:
-  pool_name: CLV_MODEL_POOL_CPU
+  pool_name: CUSTOMER_VALUE_MODEL_POOL_CPU
   stage_name: payload_stage
   target_instances: 3
   num_trials: 10
 
 serving:
-  service_name: clv_service
+  service_name: customer_value_service
   ingress_enabled: true
 
 scheduling:
-  task_name: CLV_BATCH_INFERENCE_TASK
-  procedure_name: CLV_BATCH_INFERENCE_SP
+  task_name: CUSTOMER_VALUE_BATCH_INFERENCE_TASK
+  procedure_name: CUSTOMER_VALUE_BATCH_INFERENCE_SP
   cron: "0 6 * * *"  # Daily at 6am UTC
   timezone: "UTC"
   warehouse: RETAIL_REGRESSION_DEMO_WH

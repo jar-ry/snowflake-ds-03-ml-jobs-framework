@@ -1,7 +1,7 @@
 [project]
-name = "clv-ml-framework"
+name = "customer-value-ml-framework"
 version = "0.1.0"
-description = "CLV Model Pipeline Framework on Snowflake ML Jobs"
+description = "Customer Value Model Pipeline Framework on Snowflake ML Jobs"
 requires-python = ">=3.10"
 
 [tool.black]

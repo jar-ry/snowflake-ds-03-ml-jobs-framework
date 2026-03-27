@@ -71,7 +71,7 @@ def run_range(conf: dict, start: str, end: str):
 def main():
     """CLI entrypoint — parse arguments and run the requested pipeline(s)."""
     parser = argparse.ArgumentParser(
-        description="CLV Model Pipeline Runner",
+        description="Customer Value Model Pipeline Runner",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(

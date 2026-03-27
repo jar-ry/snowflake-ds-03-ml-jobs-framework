@@ -82,7 +82,7 @@ from snowflake.ml.jobs import submit_directory
 
 job = submit_directory(
     "./",                              # project root (includes conf/ and src/)
-    "CLV_MODEL_POOL_CPU",              # compute pool
+    "CUSTOMER_VALUE_MODEL_POOL_CPU",              # compute pool
     entrypoint="src/modelling/train.py",  # script to execute
     stage_name="payload_stage",
     session=session,
