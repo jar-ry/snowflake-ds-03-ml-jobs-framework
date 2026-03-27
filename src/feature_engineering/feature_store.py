@@ -103,6 +103,6 @@ def get_spine_df(feature_view):
     """Build a spine DataFrame with one row per CUSTOMER_ID and today's date as ASOF_DATE."""
     asof_date = datetime.now()
     spine_sdf = feature_view.feature_df.group_by("CUSTOMER_ID").agg(
-        F.lit(asof_date.strftime("%Y-%m-%d")).as_("ASOF_DATE")
+        F.lit(asof_date.strftime("%Y-%m-%d %H:%M:%S")).as_("ASOF_DATE")
     )
     return spine_sdf

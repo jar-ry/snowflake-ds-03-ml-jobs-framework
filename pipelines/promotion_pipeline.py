@@ -29,7 +29,28 @@ def run(session, conf: dict):
     else:
         print(f"  Best: {version_name} (no metrics, using latest)")
 
-    print("[2/2] Promoting model (tag + default)...")
+    print("[2/3] Explaining best model (feature importance)...")
+    dataset_fqn = f"{database}.{conf['feature_store']['schema']}.{conf['feature_store']['dataset_name']}"
+    from snowflake.ml.data.data_connector import DataConnector
+    from snowflake.ml.dataset import Dataset, load_dataset
+
+    from modelling.splitter import generate_train_val_set
+
+    ds = Dataset.load(session=session, name=dataset_fqn)
+    ds_latest_version = str(ds.list_versions()[-1])
+    ds_df = load_dataset(session, dataset_fqn, ds_latest_version)
+    dc = DataConnector.from_dataset(ds_df)
+    df = dc.to_pandas()
+    train_df, _ = generate_train_val_set(
+        df,
+        feature_columns=conf["modelling"]["feature_columns"],
+        target_column=conf["modelling"]["target_column"],
+    )
+    X_explain = train_df.drop(conf["modelling"]["target_column"], axis=1).head(100)
+    explanations = best_version.run(X_explain, function_name="explain")
+    print(explanations)
+
+    print("[3/3] Promoting model (tag + default)...")
     mv = promote_model(session, mr, model_name, version_name)
 
     print(f"\nPromotion complete: {model_name}/{version_name}")

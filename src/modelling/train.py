@@ -29,8 +29,9 @@ _ensure_src_on_path()
 
 from snowflake.ml.data.data_connector import DataConnector
 from snowflake.ml.experiment import ExperimentTracking
-from snowflake.ml.experiment.callback.xgboost import SnowflakeXgboostCallback
-from snowflake.ml.model.model_signature import infer_signature
+
+# from snowflake.ml.experiment.callback.xgboost import SnowflakeXgboostCallback
+# from snowflake.ml.model.model_signature import infer_signature
 from snowflake.ml.registry import Registry
 from snowflake.snowpark import Session
 
@@ -91,13 +92,17 @@ def train():
         X_val = val_data.drop(target_column, axis=1)
         y_val = val_data[target_column]
 
-        sig = infer_signature(X_train, y_train)
-        callback = SnowflakeXgboostCallback(
-            exp,
-            model_name=model_name,
-            model_signature=sig,
-        )
-        params["callbacks"] = [callback]
+        # sig = infer_signature(X_train, y_train)
+        # SnowflakeXgboostCallback automatically logs intermediate XGBoost checkpoints
+        # during training. It does not support target_platforms or options like
+        # enable_explainability when logging the model. If you don't need those,
+        # you can use it instead of exp.log_model() below.
+        # callback = SnowflakeXgboostCallback(
+        #     exp,
+        #     model_name=model_name,
+        #     model_signature=sig,
+        # )
+        # params["callbacks"] = [callback]
 
         model = build_pipeline(
             model_params=params,
@@ -123,6 +128,10 @@ def train():
             model_name=model_name,
             version_name=run.name,
             sample_input_data=X_train,
+            target_platforms=["WAREHOUSE", "SNOWPARK_CONTAINER_SERVICES"],
+            options={
+                "enable_explainability": True,
+            },
         )
 
         # Set metrics on the model version in the registry so
