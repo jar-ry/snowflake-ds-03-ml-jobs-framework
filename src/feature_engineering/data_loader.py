@@ -33,7 +33,7 @@ def load_data(customer_data: DataFrame, behavior_data: DataFrame) -> DataFrame:
             "AVG_ORDER_VALUE",
             "PURCHASE_FREQUENCY",
             "RETURN_RATE",
-            "LIFETIME_VALUE",
+            "MONTHLY_CUSTOMER_VALUE",
             "LAST_PURCHASE_DATE",
             "TOTAL_ORDERS",
             "BEHAVIOR_UPDATED_AT",

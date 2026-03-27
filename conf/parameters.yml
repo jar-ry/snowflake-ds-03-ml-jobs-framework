@@ -22,7 +22,7 @@ model_registry:
 modelling:
   model_name: UC01_SNOWFLAKEML_RF_REGRESSOR_MODEL
   experiment_name: MY_EXPERIMENT
-  target_column: LIFETIME_VALUE
+  target_column: MONTHLY_CUSTOMER_VALUE
   feature_columns:
     - AGE
     - GENDER
@@ -99,7 +99,7 @@ monitoring:
   prediction_columns:
     - PREDICTION
   actual_columns:
-    - LIFETIME_VALUE
+    - MONTHLY_CUSTOMER_VALUE
   segment_columns:
     - GENDER
   background_warehouse: COMPUTE_WH
