@@ -208,6 +208,19 @@ if __name__ == "__main__":
         tuner_config=tuner_config,
     )
 
+    mr_schema = conf["model_registry"]["schema"]
+    mr_model = modelling["model_name"]
+    mr = Registry(session=session, database_name=database, schema_name=mr_schema)
+    try:
+        mr.get_model(mr_model)
+        print(f"Model {mr_model} already exists — skipping dummy creation")
+    except Exception:
+        from sklearn.linear_model import LinearRegression
+
+        dummy = LinearRegression().fit([[0]], [0])
+        mr.log_model(dummy, model_name=mr_model, version_name="dummy_version", sample_input_data=[[0]])
+        print(f"Pre-created model {mr_model} with dummy_version")
+
     print("HPO starting")
     results = tuner.run(dataset_map=dataset_map)
     print("HPO DONE")
