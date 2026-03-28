@@ -141,7 +141,7 @@ Update ALL of these:
 - The `tuning_metric` in `parameters.yml` must be a key in this dict
 
 ### `src/modelling/train.py`
-- **CRITICAL**: If switching away from XGBoost, remove the `SnowflakeXgboostCallback` import and its usage (lines 32, 95-99). Replace with the appropriate callback or remove callbacks entirely.
+- **NOTE**: The `SnowflakeXgboostCallback` is commented out by default because it does not support `target_platforms` or `enable_explainability` options. If switching away from XGBoost, remove the commented-out callback references entirely. If staying with XGBoost and you don't need explainability/target_platforms, you can uncomment the callback and remove the `exp.log_model()` call.
 - Update the `import xgboost` lines if the model library changed
 - The HPO search space is built dynamically from `parameters.yml` — verify the parameter names in `hpo.*` match the new model's constructor args (e.g. XGBClassifier uses the same params as XGBRegressor, but LightGBM uses `learning_rate` instead of `eta`, `num_leaves` instead of `max_depth`, etc.)
 - If the model requires different fitting logic (e.g. `eval_set` for early stopping), update the `model.fit()` call
@@ -198,7 +198,7 @@ Update ALL of these:
 - [ ] `pipeline.py` model class matches the algorithm in `parameters.yml`
 - [ ] `evaluate.py` metrics dict includes a key matching `tuning_metric` in config
 - [ ] `train.py` HPO param names match the model's constructor args
-- [ ] `train.py` callback (SnowflakeXgboostCallback) is removed/replaced if not using XGBoost
+- [ ] `train.py` callback (SnowflakeXgboostCallback) is removed if not using XGBoost (it is commented out by default)
 - [ ] `promotion.py` default metric matches `tuning_metric` or is overridden by the caller
 - [ ] `monitoring.*` columns in config match the actual prediction output schema
 - [ ] `conda.yml` includes all required packages for the new model library

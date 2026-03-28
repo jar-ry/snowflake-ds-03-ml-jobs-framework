@@ -15,7 +15,7 @@ A Kedro/Cookiecutter-inspired boilerplate for building production ML pipelines o
 ├── pipelines/
 │   ├── feature_pipeline.py          # Feature Store: load → preprocess → register → dataset
 │   ├── training_pipeline.py         # Submit HPO training job via submit_directory
-│   ├── promotion_pipeline.py        # Promote best model version (alias, tags, default)
+│   ├── promotion_pipeline.py        # Explain best model + promote (alias, tags, default)
 │   ├── inference_pipeline.py        # Batch inference via model version
 │   ├── scheduling_pipeline.py       # Scheduled batch inference via stored procedure
 │   └── monitoring_pipeline.py       # Set up ModelMonitor for drift detection
@@ -51,6 +51,7 @@ A Kedro/Cookiecutter-inspired boilerplate for building production ML pipelines o
 | **HPO Tuner** | RandomSearch over XGBoost hyperparameters across distributed trials |
 | **Datasets & DataConnectors** | Immutable, versioned snapshots for reproducible training |
 | **Model Monitor** | Continuous drift and performance monitoring |
+| **Model Explainability** | SHAP-based feature importance via the built-in `explain` function |
 
 ## Quick Start
 
