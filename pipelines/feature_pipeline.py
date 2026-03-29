@@ -1,4 +1,3 @@
-from src.feature_engineering.data_loader import load_data
 from src.feature_engineering.feature_store import (
     create_feature_store,
     create_model_registry,
@@ -6,7 +5,8 @@ from src.feature_engineering.feature_store import (
     register_entity,
     register_feature_view,
 )
-from src.feature_engineering.preprocessing import pre_process
+from src.features.data_loader import load_data
+from src.features.preprocessing import pre_process
 from src.session import create_session
 
 
