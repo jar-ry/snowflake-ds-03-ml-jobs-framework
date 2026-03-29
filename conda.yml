@@ -14,6 +14,7 @@ dependencies:
   - snowflake-ml-python=1.30.0
   - snowflake=1.7.0
   - snowflake-telemetry-python=0.5.0
+  - altair
   - xgboost
   - pyyaml
   - pip:
