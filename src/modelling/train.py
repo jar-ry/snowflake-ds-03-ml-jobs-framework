@@ -1,12 +1,11 @@
 """
 ML Job entrypoint for HPO training via submit_directory.
 
-Usage (submitted by pipelines/training_pipeline.py):
-    submit_directory("./", pool, entrypoint="src/modelling/train.py")
+Usage (submitted by src/pipelines/training_pipeline.py):
+    submit_directory(payload_dir, pool, entrypoint="modelling/train.py")
 
-The entire project directory is uploaded, so conf/parameters.yml is available
-inside the container. All column lists, hyperparameters, and training config
-are read from that YAML — nothing is hardcoded here.
+The payload contains src/ contents (flattened) + conf/. So modelling/train.py
+is the entrypoint and conf/parameters.yml is available at ./conf/parameters.yml.
 """
 
 import os
@@ -15,17 +14,14 @@ import sys
 import yaml
 
 
-def _ensure_src_on_path():
-    """Ensure src/ is on sys.path — needed in both main process and Ray workers."""
-    src_via_file = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    src_via_cwd = os.path.join(os.getcwd(), "src")
-    for p in (src_via_file, src_via_cwd):
-        if p not in sys.path:
-            sys.path.insert(0, p)
+def _ensure_root_on_path():
+    """Ensure the payload root is on sys.path so sibling packages are importable."""
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if root not in sys.path:
+        sys.path.insert(0, root)
 
 
-# Set up path in main process for module-level usage
-_ensure_src_on_path()
+_ensure_root_on_path()
 
 from snowflake.ml.data.data_connector import DataConnector
 from snowflake.ml.experiment import ExperimentTracking
@@ -41,12 +37,10 @@ from modelling.splitter import create_data_connector, generate_train_val_set
 
 
 def _load_conf() -> dict:
-    """Load parameters.yml from the project root (available via submit_directory)."""
-    # Try __file__-based resolution first, then fall back to cwd-based
+    """Load parameters.yml from the payload root (conf/ is copied alongside modelling/)."""
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     candidates = [
-        os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "conf", "parameters.yml"
-        ),
+        os.path.join(root, "conf", "parameters.yml"),
         os.path.join(os.getcwd(), "conf", "parameters.yml"),
     ]
     for conf_path in candidates:
@@ -66,7 +60,7 @@ def train():
     from snowflake.ml.modeling import tune
 
     # Ensure path is set in Ray worker processes too
-    _ensure_src_on_path()
+    _ensure_root_on_path()
 
     conf = _load_conf()
     modelling = conf["modelling"]

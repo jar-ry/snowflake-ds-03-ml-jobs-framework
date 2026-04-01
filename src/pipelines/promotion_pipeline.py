@@ -34,7 +34,7 @@ def run(session, conf: dict):
     from snowflake.ml.data.data_connector import DataConnector
     from snowflake.ml.dataset import Dataset, load_dataset
 
-    from modelling.splitter import generate_train_val_set
+    from src.modelling.splitter import generate_train_val_set
 
     ds = Dataset.load(session=session, name=dataset_fqn)
     ds_latest_version = str(ds.list_versions()[-1])

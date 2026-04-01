@@ -14,15 +14,15 @@ main.py                      ← CLI entrypoint — runs one or all pipelines
 conf/parameters.yml          ← Single config file driving all pipeline stages
 connection.json              ← Snowflake credentials (never committed)
 conda.yml                    ← Conda environment for ML Jobs runtime
-pipelines/
-  feature_pipeline.py        ← Orchestrates: load → preprocess → Feature Store → Dataset
-  training_pipeline.py       ← Submits HPO job via submit_directory
-  promotion_pipeline.py      ← Promotes best model version
-  inference_pipeline.py      ← Deploys SPCS service + batch predictions
-  scheduling_pipeline.py     ← Stored procedure + Task for scheduled inference
-  monitoring_pipeline.py     ← ModelMonitor for drift detection
 src/
   session.py                 ← Snowpark session factory (reads connection.json)
+  pipelines/
+    feature_pipeline.py      ← Orchestrates: load → preprocess → Feature Store → Dataset
+    training_pipeline.py     ← Submits HPO job via submit_directory
+    promotion_pipeline.py    ← Promotes best model version
+    inference_pipeline.py    ← Deploys SPCS service + batch predictions
+    scheduling_pipeline.py   ← Stored procedure + Task for scheduled inference
+    monitoring_pipeline.py   ← ModelMonitor for drift detection
   feature_engineering/
     data_loader.py           ← Joins source tables (currently CUSTOMERS + PURCHASE_BEHAVIOR)
     preprocessing.py         ← Derives features via Snowpark DataFrame ops
@@ -83,7 +83,7 @@ src/
 
 ## Step 3: Refactor Data Loading
 
-**Goal:** Update `src/feature_engineering/data_loader.py` AND `pipelines/feature_pipeline.py`.
+**Goal:** Update `src/feature_engineering/data_loader.py` AND `src/pipelines/feature_pipeline.py`.
 
 ### `src/feature_engineering/data_loader.py`
 - Replace the `load_data()` function body with the user's join logic
@@ -92,7 +92,7 @@ src/
 - Keep the function signature compatible: takes Snowpark DataFrames, returns a Snowpark DataFrame
 - Currently the rename dict handles `UPDATED_AT` → `BEHAVIOR_UPDATED_AT` / `CUSTOMER_UPDATED_AT` — update for the user's timestamp columns
 
-### `pipelines/feature_pipeline.py`
+### `src/pipelines/feature_pipeline.py`
 - **CRITICAL**: This file hardcodes the table names `CUSTOMERS` and `PURCHASE_BEHAVIOR` on lines 29-30. Update these to the user's table names.
 - If the user has a single table, simplify: remove the second `session.table()` call and pass a single DataFrame to `load_data()`
 - If the user has more than two tables, add additional `session.table()` calls and update `load_data()` signature accordingly
@@ -156,13 +156,13 @@ Update ALL of these:
 **Goal:** Update inference, scheduling, and monitoring for the new use case.
 
 ### `src/ml_engineering/promotion.py`
-- The `get_best_model_version()` function has a default `metric="mean_absolute_percentage_error"` — this should match `tuning_metric` from config. The calling code in `pipelines/promotion_pipeline.py` passes config values, but verify the fallback default is sensible for the new use case.
+- The `get_best_model_version()` function has a default `metric="mean_absolute_percentage_error"` — this should match `tuning_metric` from config. The calling code in `src/pipelines/promotion_pipeline.py` passes config values, but verify the fallback default is sensible for the new use case.
 
 ### `src/ml_engineering/serving.py`
 - Usually no changes — it's generic (calls `mv.run()`)
 - If the user needs different prediction column naming, update `prediction_column` parameter
 
-### `pipelines/inference_pipeline.py`
+### `src/pipelines/inference_pipeline.py`
 - Constructs input table as `{database}.{fs_schema}.{fv_name}${fv_version}` (the Dynamic Table backing the FeatureView). This should work automatically from config, but verify the config keys are set correctly.
 
 ### `src/ml_engineering/scheduling.py`
@@ -233,7 +233,7 @@ If errors occur, help debug by reading logs and tracing the issue back to the re
 ## Important Notes
 
 - **Never hardcode values** — everything goes in `parameters.yml`
-- **Keep the pipeline orchestration pattern** — individual pipelines in `pipelines/`, business logic in `src/`
+- **Keep the pipeline orchestration pattern** — individual pipelines in `src/pipelines/`, business logic in `src/` domain packages
 - **Preserve the `submit_directory` pattern** — `train.py` runs inside a Snowflake container, so it must load config from `conf/parameters.yml` at runtime
 - **The `train()` function in `train.py` is called by Ray workers** — imports must happen inside the function, not at module level (path issues in distributed execution)
 - **Feature descriptions** in `feature_store.py` are optional but good practice — update them to match new features

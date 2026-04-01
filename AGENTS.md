@@ -2,7 +2,7 @@
 
 ## What This Repo Is
 
-A production-grade, Kedro/Cookiecutter-style Python framework for ML on Snowflake. The entire project directory is submitted to a compute pool via `submit_directory`. Six pipeline stages, centralised YAML config, pre-commit hooks, modular packages.
+A production-grade, Kedro/Cookiecutter-style Python framework for ML on Snowflake. The `src/` directory contains all application code (pipelines + domain modules). A clean payload of `src/` contents + `conf/` is submitted to a compute pool via `submit_directory`. Six pipeline stages, centralised YAML config, pre-commit hooks, modular packages.
 
 **Use case:** Customer value regression (predict `MONTHLY_CUSTOMER_VALUE`).
 
@@ -15,15 +15,15 @@ A production-grade, Kedro/Cookiecutter-style Python framework for ML on Snowflak
 ├── .pre-commit-config.yaml          # Git hooks
 ├── conf/
 │   └── parameters.yml               # All pipeline configuration
-├── pipelines/
-│   ├── feature_pipeline.py          # Feature Store: load → preprocess → register → dataset
-│   ├── training_pipeline.py         # Submit HPO training job via submit_directory
-│   ├── promotion_pipeline.py        # Explain best model + promote (alias, tags, default)
-│   ├── inference_pipeline.py        # Batch inference via model version
-│   ├── scheduling_pipeline.py       # Scheduled batch inference via stored procedure
-│   └── monitoring_pipeline.py       # ModelMonitor for drift detection
 └── src/
     ├── session.py                   # Snowpark session factory
+    ├── pipelines/
+    │   ├── feature_pipeline.py      # Feature Store: load → preprocess → register → dataset
+    │   ├── training_pipeline.py     # Submit HPO training job via submit_directory
+    │   ├── promotion_pipeline.py    # Explain best model + promote (alias, tags, default)
+    │   ├── inference_pipeline.py    # Batch inference via model version
+    │   ├── scheduling_pipeline.py   # Scheduled batch inference via stored procedure
+    │   └── monitoring_pipeline.py   # ModelMonitor for drift detection
     ├── features/
     │   ├── data_loader.py           # Join CUSTOMERS + PURCHASE_BEHAVIOR
     │   └── preprocessing.py         # Feature derivation (Snowpark DataFrame ops)
@@ -115,9 +115,9 @@ All parameters live in `conf/parameters.yml`. No hardcoded values in code. Key s
 
 ## Architecture Notes
 
-- `submit_directory` ships the entire project to the compute pool. `src/modelling/train.py` is the entrypoint executed inside the container.
+- `submit_directory` builds a clean payload from `src/` (excluding `pipelines/`) + `conf/` and submits it to the compute pool. `modelling/train.py` is the entrypoint executed inside the container.
 - `train.py` has two roles: (1) the `train()` function is the per-trial HPO function run by Ray workers, (2) the `__main__` block sets up the Tuner and launches HPO.
-- `train()` reads `conf/parameters.yml` inside the container — the file is available because `submit_directory` uploads the whole project.
+- `train()` reads `conf/parameters.yml` inside the container — the file is available because it’s copied into the payload alongside the source code.
 - `SnowflakeXgboostCallback` is commented out in `train.py` — it doesn't support `target_platforms` or `enable_explainability`. Models are logged via `exp.log_model()` with `target_platforms=["WAREHOUSE", "SNOWPARK_CONTAINER_SERVICES"]` and `options={"enable_explainability": True}`.
 - Before HPO, the `__main__` block pre-creates the model in the Registry with a dummy version to avoid "Object already exists" race conditions from parallel trials.
 - `promotion_pipeline.py` runs explainability (SHAP) on the best model before promoting it.
@@ -127,5 +127,5 @@ All parameters live in `conf/parameters.yml`. No hardcoded values in code. Key s
 - **Change model type:** Edit `src/modelling/pipeline.py` (sklearn Pipeline), update `hpo` section in `parameters.yml`, update `src/modelling/evaluate.py` metrics
 - **Change features:** Edit `src/features/data_loader.py` and `src/features/preprocessing.py`, update column lists in `parameters.yml`
 - **Change HPO:** Modify `hpo` section in `parameters.yml` (parameter names must match model constructor args)
-- **Add a new pipeline stage:** Create `pipelines/new_pipeline.py` with a `run(session, conf)` function, add to `PIPELINE_ORDER` and `PIPELINES` in `main.py`
+- **Add a new pipeline stage:** Create `src/pipelines/new_pipeline.py` with a `run(session, conf)` function, add to `PIPELINE_ORDER` and `PIPELINES` in `main.py`
 - **Refactor for a different use case:** Use the `refactor-framework` Cortex Code skill (`.cortex/skills/refactor-framework/SKILL.md`)

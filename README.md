@@ -12,15 +12,15 @@ A Kedro/Cookiecutter-inspired boilerplate for building production ML pipelines o
 ├── .pre-commit-config.yaml          # Pre-commit hooks (black, ruff, isort, etc.)
 ├── conf/
 │   └── parameters.yml               # Single YAML config for all pipelines
-├── pipelines/
-│   ├── feature_pipeline.py          # Feature Store: load → preprocess → register → dataset
-│   ├── training_pipeline.py         # Submit HPO training job via submit_directory
-│   ├── promotion_pipeline.py        # Explain best model + promote (alias, tags, default)
-│   ├── inference_pipeline.py        # Batch inference via model version
-│   ├── scheduling_pipeline.py       # Scheduled batch inference via stored procedure
-│   └── monitoring_pipeline.py       # Set up ModelMonitor for drift detection
 └── src/
     ├── session.py                   # Snowpark session factory (local execution)
+    ├── pipelines/
+    │   ├── feature_pipeline.py      # Feature Store: load → preprocess → register → dataset
+    │   ├── training_pipeline.py     # Submit HPO training job via submit_directory
+    │   ├── promotion_pipeline.py    # Explain best model + promote (alias, tags, default)
+    │   ├── inference_pipeline.py    # Batch inference via model version
+    │   ├── scheduling_pipeline.py   # Scheduled batch inference via stored procedure
+    │   └── monitoring_pipeline.py   # Set up ModelMonitor for drift detection
     ├── feature_engineering/
     │   ├── data_loader.py           # Join CUSTOMERS + PURCHASE_BEHAVIOR
     │   ├── preprocessing.py         # Feature derivation (Snowpark DataFrame ops)
@@ -44,7 +44,7 @@ A Kedro/Cookiecutter-inspired boilerplate for building production ML pipelines o
 
 | Service | Purpose |
 |---|---|
-| **ML Jobs (`submit_directory`)** | Submits project directory to a compute pool; `src/modelling/train.py` is the entrypoint |
+| **ML Jobs (`submit_directory`)** | Builds a clean payload from `src/` + `conf/` and submits to a compute pool; `modelling/train.py` is the entrypoint |
 | **Feature Store** | Managed FeatureViews backed by Dynamic Tables with scheduled refresh |
 | **Model Registry** | Versioned model storage with aliases, tags, and default versions |
 | **Experiment Tracking** | Per-trial parameter/metric/model logging during HPO |
@@ -82,9 +82,9 @@ Unlike the `@remote` decorator (used in `02_ml_jobs_notebook`), this framework s
 from snowflake.ml.jobs import submit_directory
 
 job = submit_directory(
-    "./",                              # project root (includes conf/ and src/)
-    "CUSTOMER_VALUE_MODEL_POOL_CPU",              # compute pool
-    entrypoint="src/modelling/train.py",  # script to execute
+    payload_dir,                           # clean payload: src/ contents + conf/
+    "CUSTOMER_VALUE_MODEL_POOL_CPU",       # compute pool
+    entrypoint="modelling/train.py",       # script to execute (relative to payload root)
     stage_name="payload_stage",
     session=session,
 )
