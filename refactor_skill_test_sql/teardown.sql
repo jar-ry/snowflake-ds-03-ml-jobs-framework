@@ -7,6 +7,9 @@
 
 USE ROLE ACCOUNTADMIN;
 
+-- ─── Drop compute pool ─────────────────────────────────────────────────────
+DROP COMPUTE POOL IF EXISTS CHURN_MODEL_POOL_CPU;
+
 -- ─── Drop database (cascades all schemas, tables, views, stages, etc.) ───────
 DROP DATABASE IF EXISTS CHURN_CLASSIFICATION_DEMO;
 
